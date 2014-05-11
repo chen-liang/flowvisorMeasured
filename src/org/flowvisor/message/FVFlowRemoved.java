@@ -12,6 +12,7 @@ import org.flowvisor.flows.FlowMap;
 import org.flowvisor.flows.SliceAction;
 import org.flowvisor.log.FVLog;
 import org.flowvisor.log.LogLevel;
+import org.flowvisor.measurement.Measurement;
 import org.flowvisor.openflow.protocol.FVMatch;
 import org.flowvisor.slicer.FVSlicer;
 import org.openflow.protocol.OFFlowRemoved;
@@ -42,9 +43,14 @@ public class FVFlowRemoved extends OFFlowRemoved implements Classifiable,
 				fvClassifier.getDPID());
 		
 		CookiePair pair = untanslateCookie(fvClassifier);
-		
+
 		//FVLog.log(LogLevel.DEBUG, fvClassifier, slicerFromCookie);
-		
+
+		///////////////////////////////////////////////
+		Measurement measurement = Measurement.getInstance();
+		measurement.recordFlowProcess(fvClassifier.getDPID(), false, this.getMatch());
+		//////////////////////////////////////////////
+
 		if (sliceName != null)
 			slicesToUpdate.add(sliceName);
 		else if (pair != null) 

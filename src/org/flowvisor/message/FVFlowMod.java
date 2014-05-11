@@ -82,13 +82,23 @@ public class FVFlowMod extends org.openflow.protocol.OFFlowMod implements
 		}
 
 		
+		///////////////////////////////////////////////
+		Measurement measurement = Measurement.getInstance();
+		measurement.countFlowMod(fvSlicer.getSliceName());
+		if(this.command == OFFlowMod.OFPFC_DELETE || this.command == OFFlowMod.OFPFC_DELETE_STRICT) {
+			measurement.recordFlowProcess(fvClassifier.getDPID(), false, this.getMatch());
+		}
+		if(this.command == OFFlowMod.OFPFC_ADD) {
+			measurement.recordFlowProcess(fvClassifier.getDPID(), true, this.getMatch());
+		}
+		//////////////////////////////////////////////
+		
 		// expand this match to everything that intersects the flowspace
 		List<FlowIntersect> intersections = fvSlicer.getFlowSpace().intersects(
 				fvClassifier.getDPID(), new FVMatch(getMatch()));
 
 		int expansions = 0;
-		OFFlowMod original = this.clone(); // keep an unmodified copy
-		
+		OFFlowMod original = this.clone(); // keep an unmodified copy		
 		
 		int oldALen = FVMessageUtil.countActionsLen(this.getActions());
 		this.setActions(actionsList);
@@ -103,8 +113,6 @@ public class FVFlowMod extends org.openflow.protocol.OFFlowMod implements
 					&& !(sliceModMap.containsKey(inter.getFlowEntry().getSliceName())))
 				sliceModMap.put(inter.getFlowEntry().getSliceName(), null);	
 		}
-		
-
 						
 		for (FlowIntersect intersect : intersections) {
 			FVLog.log(LogLevel.DEBUG,null,"intersect: ",intersect.toString());
@@ -179,8 +187,8 @@ public class FVFlowMod extends org.openflow.protocol.OFFlowMod implements
 				 */
 				applyForceEnqueue(newFlowMod, intersect.getFlowEntry());
 				///////////////////////////////////////////////
-				Measurement measurement = Measurement.getInstance();
-				measurement.recordFlowProcess(fvClassifier.getDPID());
+				//Measurement measurement = Measurement.getInstance();
+				//measurement.recordFlowProcess(fvClassifier.getDPID(), true);
 				//////////////////////////////////////////////
 
 				fvClassifier.sendMsg(newFlowMod, fvSlicer);
@@ -229,8 +237,8 @@ public class FVFlowMod extends org.openflow.protocol.OFFlowMod implements
 				}
 
 				///////////////////////////////////////////////
-				Measurement measurement = Measurement.getInstance();
-				measurement.recordFlowProcess(fvClassifier.getDPID());
+				//Measurement measurement = Measurement.getInstance();
+				//measurement.recordFlowProcess(fvClassifier.getDPID(), true);
 				//////////////////////////////////////////////
 				fvClassifier.sendMsg(newFlowMod, fvSlicer);
 			}
